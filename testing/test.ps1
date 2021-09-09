@@ -1,2 +1,6 @@
-Get-Date | Out-File c:\temp\ps1.txt -Force -NoClobber
-"test completed" | Out-File c:\temp\ps1.txt -Force -NoClobber -Append
+#cabrego - 20210412
+$PSrequiredVersion = 6.2
+
+echo "finished script" >> c:\script.txt
+
+Log "Finished"
