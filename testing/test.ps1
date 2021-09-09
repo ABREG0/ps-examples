@@ -1,2 +1,2 @@
-Get-Date  >> c:\ps1.txt
-write-host "test completed" >> c:\ps1.txt
+Get-Date | Out-File c:\temp\ps1.txt -Force -NoClobber
+"test completed" | Out-File c:\temp\ps1.txt -Force -NoClobber -Append
