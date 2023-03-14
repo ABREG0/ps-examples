@@ -29,12 +29,12 @@ new-item -ItemType Directory -Force -Path "c:\agent"
 set-location "c:\agent"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$wr = Invoke-WebRequest https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases/latest
+$wr = Invoke-WebRequest 'https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases/latest'
 $tag = ($wr | ConvertFrom-Json)[0].tag_name
 $tag = $tag.Substring(1)
 
 write-host "$tag is the latest version"
-$package = "https://vstsagentpackage.azureedge.net/agent/$tag/vsts-agent-win-x64-$tag.zip"
+$package = "https://vstsagentpackage.azureedge.net/agent/$($tag)/vsts-agent-win-x64-$($tag).zip"
 
 Invoke-WebRequest $package -Out agent.zip
 
