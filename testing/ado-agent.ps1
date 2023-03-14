@@ -12,12 +12,17 @@ param (
     $token
 )
 
+write-host "pool: [$($poolName)] uri: [$($adoOrgUrl)] token: [$($token)]"
+
 New-Item "C:\agent" -itemType Directory
+
 Set-Location "C:\agent"
+
 $ComputerName = hostname
+
 $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$token"))
 
-$package = Invoke-RestMethod "$adoOrgUrl/_apis/distributedtask/packages/agent?platform=win-x64&$`top=1" -Headers @{Authorization = "Basic $auth"}
+$package = Invoke-RestMethod "$($adoOrgUrl)/_apis/distributedtask/packages/agent?platform=win-x64&$`top=1" -Headers @{Authorization = "Basic $auth"}
 
 $fileName = $package.value[0].fileName;
 $downloadUrl = $package.value[0].downloadUrl;
