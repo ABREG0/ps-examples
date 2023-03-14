@@ -19,23 +19,26 @@ write-host '#################################################'
 write-host "pool: [$($poolName)] uri: [$($adoOrgUrl)] token: [$($token)] computer: [$($ComputerName)]"
 write-host '#################################################'
 
-New-Item "C:\agent" -itemType Directory
+if (test-path "c:\agent")
+{
+    Remove-Item -Path "c:\agent" -Force -Confirm:$false -Recurse
+}
 
-Set-Location "C:\agent"
+new-item -ItemType Directory -Force -Path "c:\agent"
 
+set-location "c:\agent"
 
-$auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$token"))
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$wr = Invoke-WebRequest https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases/latest
+$tag = ($wr | ConvertFrom-Json)[0].tag_name
+$tag = $tag.Substring(1)
 
-$package = Invoke-RestMethod "$($adoOrgUrl)/_apis/distributedtask/packages/agent?platform=win-x64&$`top=1" -Headers @{Authorization = "Basic $auth"}
+write-host "$tag is the latest version"
+$package = "https://vstsagentpackage.azureedge.net/agent/$tag/vsts-agent-win-x64-$tag.zip"
 
-$fileName = $package.value[0].fileName;
-$downloadUrl = $package.value[0].downloadUrl;
-    
+Invoke-WebRequest $package -Out agent.zip
 
-Invoke-WebRequest -UseBasicParsing $downloadUrl -OutFile agent.zip
-Expand-Archive -Force agent.zip -DestinationPath .
-Remove-Item -Force agent.zip
-
+Expand-Archive -Path agent.zip -DestinationPath $PWD
 
 .\config.cmd --agetn $ComputerName --unattended --replace --acceptTeeEula --work work --url $adoOrgUrl --pool $poolName --auth pat --token $token --runAsService
 .\run.cmd
