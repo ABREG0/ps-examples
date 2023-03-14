@@ -9,16 +9,20 @@ param (
     $adoOrgUrl,
     [Parameter()]
     [string]
-    $token
+    $token,
+    [Parameter()]
+    [string]
+    $ComputerName
 )
 
-write-host "pool: [$($poolName)] uri: [$($adoOrgUrl)] token: [$($token)]"
+write-host '#################################################'
+write-host "pool: [$($poolName)] uri: [$($adoOrgUrl)] token: [$($token)] computer: [$($ComputerName)]"
+write-host '#################################################'
 
 New-Item "C:\agent" -itemType Directory
 
 Set-Location "C:\agent"
 
-$ComputerName = hostname
 
 $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$token"))
 
