@@ -38,5 +38,5 @@ Invoke-WebRequest $package -Out agent.zip
 
 Expand-Archive -Path agent.zip -DestinationPath $PWD
 
-.\config.cmd --agent $ComputerName --unattended --replace --acceptTeeEula --work work --url $adoOrgUrl --pool $poolName --auth pat --token $token  --runAsService --windowsLogonAccount "NT AUTHORITY\SYSTEM"
+.\config.cmd --agent $ComputerName --unattended --replace --work work --url $adoOrgUrl --pool $poolName --auth pat --token $token  --runAsService --windowsLogonAccount "NT AUTHORITY\SYSTEM"
 .\run.cmd
