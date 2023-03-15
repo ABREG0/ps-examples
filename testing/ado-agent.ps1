@@ -38,5 +38,4 @@ Invoke-WebRequest $package -Out agent.zip
 
 Expand-Archive -Path agent.zip -DestinationPath $PWD
 
-.\config.cmd --unattended --work "work" --agent "$($ComputerName)" --replace --url "$($adoOrgUrl)" --pool "$($poolName)" --auth pat --token $token --runAsService --windowsLogonAccount "NT AUTHORITY\SYSTEM"
-.\run.cmd
+.\config.cmd --unattended --url "$($adoOrgUrl)" --pool "$($poolName)" --work "work" --agent "$($ComputerName)" --auth pat --token $token --runAsService --windowsLogonAccount 'NT AUTHORITY\NETWORK SERVICE'
