@@ -30,7 +30,7 @@ set-location "c:\agent"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$package = 'https://vstsagentpackage.azureedge.net/agent/2.217.2/vsts-agent-win-x64-2.217.2.zip'
+$package = 'https://vstsagentpackage.azureedge.net/agent/3.217.1/vsts-agent-win-x64-3.217.1.zip'
 
 write-host "agent url: [$($package)]"
 
@@ -38,5 +38,5 @@ Invoke-WebRequest $package -Out agent.zip
 
 Expand-Archive -Path agent.zip -DestinationPath $PWD
 
-.\config.cmd --agent $ComputerName --unattended --replace --work work --url $adoOrgUrl --pool $poolName --auth pat --token $token  --runAsService --windowsLogonAccount "NT AUTHORITY\SYSTEM"
+.\config.cmd --agent $ComputerName --unattended --replace --work work --url $adoOrgUrl --pool $poolName --auth pat --token $token --runAsService --windowsLogonAccount "NT AUTHORITY\SYSTEM"
 .\run.cmd
