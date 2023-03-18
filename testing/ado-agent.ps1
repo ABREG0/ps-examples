@@ -38,7 +38,7 @@ Invoke-WebRequest $package -Out agent.zip
 
 Expand-Archive -Path agent.zip -DestinationPath $PWD
 
-.\config.cmd --unattended --url "$($adoOrgUrl)" --pool "$($poolName)" --work "work" --agent "$($ComputerName)" --auth pat --token $token --runAsService --windowsLogonAccount 'NT AUTHORITY\NETWORK SERVICE'
+.\config.cmd --unattended --url "$($adoOrgUrl)" --pool "$($poolName)" --work "work" --agent "$($ComputerName)" --replace --auth pat --token $token --runAsService --windowsLogonAccount 'NT AUTHORITY\NETWORK SERVICE'
 
 write-host "Check if PS was launched as admin..." -ForegroundColor Yellow
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))  
@@ -57,15 +57,13 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
  $TLS12Protocol = [System.Net.SecurityProtocolType] 'Tls12'
 [System.Net.ServicePointManager]::SecurityProtocol = $TLS12Protocol
 
-function Install-choco {
-    Set-ExecutionPolicy Bypass -Scope Process -Force;
+Set-ExecutionPolicy Bypass -Scope Process -Force;
 
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; 
-    
-    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-    
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; 
 
-}
+Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+
 choco install powershell-core --version=7.2.1 -y --force --force-dependencies
     
 choco install azure-cli -y --force --force-dependencies
