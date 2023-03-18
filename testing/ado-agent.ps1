@@ -70,4 +70,48 @@ choco install azure-cli -y --force --force-dependencies
 
 choco install git -y --force --force-dependencies
 
-choco install terraform --version=1.4.0 -y --force --force-dependencies
+# choco install terraform --version=1.4.0 -y --force --force-dependencies # no yes in choco
+    $Url = 'https://releases.hashicorp.com/terraform/1.4.0' #'https://www.terraform.io/downloads.html'
+    
+    try {
+
+      $tfVersion = @(terraform -v) | Where-Object{$_ -match 'terraform'} | ForEach-Object{"$($_ -replace 'terraform v')"}
+
+      #$terraformPath = $ENV:Path -split ';' | Where-Object { $_ -match 'terraform'}
+
+    }
+    catch {
+        $tfVersion = $null
+      #$terraformPath = $null
+    }
+
+    if(($null -eq $terraformPath) -and ($null -eq $tfVersion)){
+
+        $terraformPath = 'C:\Terraform\'
+
+        $envRegpath = 'HKLM:\System\CurrentControlSet\Control\Session Manager\Environment'
+
+        $PathString = (Get-ItemProperty -Path $envRegpath -Name PATH).Path
+
+        $PathString += ";$($terraformPath)"
+
+        $null = New-Item -Path $($terraformPath) -ItemType Directory -Force 
+
+        $source = (Invoke-WebRequest -Uri $url -UseBasicParsing).links.href | Where-Object {$_ -match 'windows_amd64'}
+
+        $destination = "$env:TEMP\$(Split-Path -Path $source -Leaf)"
+
+        Invoke-WebRequest -Uri $source -OutFile $destination -UseBasicParsing
+        
+        Expand-Archive -Path $destination -DestinationPath $terraformPath -Force
+
+        Remove-Item -Path $destination -Force
+
+        Set-ItemProperty -Path $envRegpath -Name PATH -Value $PathString -ErrorAction SilentlyContinue
+
+        $ENV:Path += ";$($terraformPath)"
+      }
+      else{
+
+        Write-Host " Terraform is Installed... version: $($tfVersion)" -ForegroundColor Green
+      }
