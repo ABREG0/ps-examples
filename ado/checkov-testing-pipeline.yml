@@ -1,0 +1,7 @@
+# Step 1: run the Checkov Static Code Analysis
+    - bash: chmod +x $(terraformWorkingDirectory)/checkov.sh
+      displayName: make script executable
+    - bash: |
+        $(terraformWorkingDirectory)/checkov.sh $(System.DefaultWorkingDirectory)/terraform/core-infra
+        # Checkov -f $(System.DefaultWorkingDirectory)/terraform/core-infra/tfplan.json
+      displayName: Checkov Static Code Analysis
