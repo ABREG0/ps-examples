@@ -1,0 +1,111 @@
+
+on:
+  workflow_call:
+    inputs:
+      terraformPath:
+        required: true
+        type: string
+      targetEnvironment:
+        required: true
+        type: string
+    # secrets:
+    #   envPAT:
+    #     required: true
+
+jobs:
+  CallplanRunner:
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/plan.yml
+    with:
+      terraformPath: ./terraform
+      targetEnvironment: dev-plan
+    secrets: inherit
+
+  tfapply:
+    name: 'tfapply'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.targetEnvironment }}
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        #working-directory: './terraform'
+        
+    steps:
+      # Authentication
+      - name: OIDC Azure Login
+        uses: Azure/login@v1
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          enable-AzPSSession: true
+          # allow-no-subscriptions: true
+  
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout
+        uses: actions/checkout@v4
+  
+      # Install the latest version of terraform CLI and configure the terraform CLI configuration file with a terraform Cloud user API token
+      - name: Setup tf-plan
+        uses:  hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+  
+      - name: terraform init
+        run: |
+          cd dev-test
+          terraform init -input=false \
+          -backend-config="resource_group_name=hub-tier0" \
+          -backend-config="storage_account_name=mywestus3sattt" \
+          -backend-config="container_name=terraform" \
+          -backend-config="key=dev.tfstate"
+          # --backend-config="../dev.hcl"
+        working-directory: '${{ github.workspace }}/terraform'
+        env:
+          ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          ARM_SUBSCRIPTION_ID : ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+          ARM_USE_OIDC: true
+  
+      - name: terraform plan
+        run: |
+          cd dev-test
+          terraform plan
+        working-directory: '${{ github.workspace }}/terraform'
+        env:
+          ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          ARM_SUBSCRIPTION_ID : ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+          ARM_USE_OIDC: true
+  
+      - name: Apply
+        run: |
+          cd dev-test
+          terraform apply \
+          -input=false \
+          -auto-approve 
+        working-directory: '${{ github.workspace }}/terraform'
+        env:
+          ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          ARM_SUBSCRIPTION_ID : ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+          ARM_USE_OIDC: true
+
+      - name: destroy
+        run: |
+          cd dev-test
+          terraform destroy \
+          -input=false \
+          -auto-approve 
+        working-directory: '${{ github.workspace }}/terraform'
+        env:
+          ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          ARM_SUBSCRIPTION_ID : ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+          ARM_USE_OIDC: true
+      
