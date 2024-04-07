@@ -17,6 +17,9 @@ jobs:
     name: 'tfplan'
     runs-on: ubuntu-latest
     environment: ${{ inputs.targetEnvironment }}
+    outputs:
+      output_TFPLAN : ${{ steps.tfplan.outputs.output_TFPLAN }}
+      output_TFAPPLY : ${{ steps.tfplan.outputs.output_TFAPPLY }}
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
@@ -62,9 +65,10 @@ jobs:
           ARM_USE_OIDC: true
 
       - name: terraform plan
+        id: tfplan
         run: |
           cd dev-test
-          terraform plan
+          terraform plan --out=out.tfplan
         working-directory: '${{ github.workspace }}/terraform'
         env:
           ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
@@ -72,12 +76,27 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
           ARM_USE_OIDC: true
 
+      - name: Upload the plan
+        id: upload_plan
+        uses: actions/upload-artifact@v3
+        with:
+          name: tf-plan
+          path: ${{ github.workspace }}/terraform/dev-test/out.tfplan
+
+      - name: Download the plan
+        id: download_plan
+        uses: actions/download-artifact@v3
+        with:
+          name: tf-plan
+          path: ${{ github.workspace }}/terraform/dev-test
+      
+
       - name: Apply
         run: |
           cd dev-test
           terraform apply \
           -input=false \
-          -auto-approve 
+          -auto-approve out.tfplan
         working-directory: '${{ github.workspace }}/terraform'
         env:
           ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
